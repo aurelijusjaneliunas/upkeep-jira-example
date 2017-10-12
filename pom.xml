@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.hindsightsoftware.upkeep</groupId>
+	<artifactId>example</artifactId>
+	<version>1.0-SNAPSHOT</version>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<scala.version>2.12.3</scala.version>
+		<encoding>UTF-8</encoding>
+
+		<gatling.version>2.3.0</gatling.version>
+		<gatling-plugin.version>2.2.4</gatling-plugin.version>
+
+		<scala-maven-plugin.version>3.2.2</scala-maven-plugin.version>
+
+		<!-- Cloud formation properties -->
+		<jira.cloudformation.template.url>https://s3.amazonaws.com/quickstart-reference/atlassian/jira/latest/templates/quickstart-jira-master.template</jira.cloudformation.template.url>
+        <jira.cloudformation.conf.file>${project.build.testOutputDirectory}/cloudformation.conf</jira.cloudformation.conf.file>
+        <jira.cloudformation.region>us-east-1</jira.cloudformation.region>
+        <jira.cloudformation.stack.name>JIRA-Data-Center</jira.cloudformation.stack.name>
+
+        <!-- JIRA Initialisation properties -->
+
+
+        <!-- Information required to start EC2 instances and control them via SSH -->
+        <ssh.private.key>${user.home}/.ssh/gatling-keypair.pem</ssh.private.key>
+        <ec2.key.pair.name>gatling-keypair</ec2.key.pair.name>
+        <ec2.security.group>default</ec2.security.group>
+        <ec2.instance.count>1</ec2.instance.count>
+		<ec2.end.point>https://ec2.us-east-1.amazonaws.com</ec2.end.point>
+		<ec2.ami.id>ami-8c1be5f6</ec2.ami.id>
+		<ec2.force.termination>true</ec2.force.termination>
+		<ec2.keep.alive>false</ec2.keep.alive>
+
+        <gatling.local.home>${project.basedir}/gatling/gatling-charts-highcharts-bundle-${gatling.version}/bin/gatling.sh</gatling.local.home>
+        <gatling.install.script>${project.basedir}/src/test/resources/install-gatling.sh</gatling.install.script>
+        <gatling.root>gatling-charts-highcharts-bundle-${gatling.version}</gatling.root>
+        <gatling.java.opts>-Xms1g -Xmx4g</gatling.java.opts>
+
+		<!-- S3 integration settings -->
+		<s3.upload.enabled>true</s3.upload.enabled>
+		<s3.bucket>gatling-tests</s3.bucket>
+		<s3.subfolder>my-gatling-tests-results</s3.subfolder>
+
+		<skipDownloadGatling>false</skipDownloadGatling>
+        <skipLocalTest>false</skipLocalTest>
+    </properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.gatling</groupId>
+				<artifactId>gatling-app</artifactId>
+				<version>${gatling.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.gatling</groupId>
+				<artifactId>gatling-recorder</artifactId>
+				<version>${gatling.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.gatling.highcharts</groupId>
+				<artifactId>gatling-charts-highcharts</artifactId>
+				<version>${gatling.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.gatling.highcharts</groupId>
+			<artifactId>gatling-charts-highcharts</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.gatling</groupId>
+			<artifactId>gatling-app</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.gatling</groupId>
+			<artifactId>gatling-recorder</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+            <!-- Download gatling standalone application based on version provided in this pom.xml -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.4.0</version>
+				<executions>
+					<execution>
+						<id>exec-download-gatling</id>
+						<phase>generate-resources</phase>
+						<configuration>
+							<workingDirectory>.</workingDirectory>
+							<executable>src/test/resources/download-gatling.sh</executable>
+							<arguments>
+								<argument>${gatling.version}</argument>
+							</arguments>
+							<skip>${skipDownloadGatling}</skip>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.hindsightsoftware.upkeep</groupId>
+				<artifactId>jira-cloudformation-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<parameters>
+								<AvailabilityZones>us-east-1a,us-east-1b</AvailabilityZones>
+								<DBMasterUserPassword>cloudformationexample</DBMasterUserPassword>
+								<DBPassword>cloudformationexample</DBPassword>
+								<KeyPairName>gatling-keypair</KeyPairName>
+								<CustomDnsName/>
+								<JiraProduct>Software</JiraProduct>
+							</parameters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Required for running smaller Gatling simulations locally for debugging purposes -->
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>${scala-maven-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>io.gatling</groupId>
+				<artifactId>gatling-maven-plugin</artifactId>
+				<version>${gatling-plugin.version}</version>
+				<executions>
+					<execution>
+                        <configuration>
+                            <skip>${skipLocalTest}</skip>
+							<runMultipleSimulations>true</runMultipleSimulations>
+                        </configuration>
+                        <phase>integration-test</phase>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+            <!-- Required for running large scale Gatling simulations on EC2 instances -->
+			<!-- <plugin>
+                <groupId>com.ea.gatling</groupId>
+                <artifactId>gatling-aws-maven-plugin</artifactId>
+                <version>1.0.14</version>
+                <executions>
+                    <execution>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin> -->
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <id>exec-post-integration-test</id>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <workingDirectory>.</workingDirectory>
+                            <executable>echo</executable>
+                            <arguments>
+                                <argument>"post-integration-test"</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+
+		<!-- <testSourceDirectory>src/test/scala</testSourceDirectory>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>net.alchim31.maven</groupId>
+					<artifactId>scala-maven-plugin</artifactId>
+					<version>${scala-maven-plugin.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<args>
+								<arg>-Ybackend:GenBCode</arg>
+								<arg>-Ydelambdafy:method</arg>
+								<arg>-target:jvm-1.8</arg>
+								<arg>-deprecation</arg>
+								<arg>-feature</arg>
+								<arg>-unchecked</arg>
+								<arg>-language:implicitConversions</arg>
+								<arg>-language:postfixOps</arg>
+							</args>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins> -->
+
+
+	</build>
+</project>
