@@ -18,7 +18,7 @@
 		<scala-maven-plugin.version>3.2.2</scala-maven-plugin.version>
 
 		<!-- Cloud formation properties -->
-		<jira.cloudformation.template.url>https://s3.amazonaws.com/quickstart-reference/atlassian/jira/latest/templates/quickstart-jira-master.template</jira.cloudformation.template.url>
+		<jira.cloudformation.template.url>https://s3.amazonaws.com/quickstart-reference/atlassian/jira/latest/templates/JiraDataCenter.template</jira.cloudformation.template.url>
         <jira.cloudformation.conf.file>${project.build.testOutputDirectory}/cloudformation.conf</jira.cloudformation.conf.file>
         <jira.cloudformation.region>us-east-1</jira.cloudformation.region>
         <jira.cloudformation.stack.name>JIRA-Data-Center</jira.cloudformation.stack.name>
@@ -131,14 +131,31 @@
 							<goal>start</goal>
 						</goals>
 						<configuration>
+							<!-- Parameters needed by the template.
+							     Optional keys need to be explicitly declared with no value -->
 							<parameters>
-								<AvailabilityZones>us-east-1a,us-east-1b</AvailabilityZones>
+                                <!-- In this example, we are using the default VPC with public
+                                     subnets so we can access database and instances more easily.
+                                     You should not do this for production environment! However,
+                                     we are doing this just for testing purposes. The JIRA template
+                                     allows us to define already existing VPC. -->
+                                <VPC>vpc-7fbcd119</VPC>
+								<ExternalSubnets>subnet-b15306ea,subnet-167ceb2a</ExternalSubnets>
+                                <InternalSubnets>subnet-b15306ea,subnet-167ceb2a</InternalSubnets>
+                                <AssociatePublicIpAddress>true</AssociatePublicIpAddress>
 								<DBMasterUserPassword>cloudformationexample</DBMasterUserPassword>
 								<DBPassword>cloudformationexample</DBPassword>
-								<KeyPairName>gatling-keypair</KeyPairName>
+								<KeyName>gatling-keypair</KeyName>
 								<CustomDnsName/>
 								<JiraProduct>Software</JiraProduct>
 							</parameters>
+							<!-- What parameters to export once the stack is built?
+							     All params will be exported to jira.cloudformation.conf.file
+							     as key-value pairs -->
+							<exports>
+								<param>JIRAURL</param>
+								<param>LoadBalancerURL</param>
+							</exports>
 						</configuration>
 					</execution>
 				</executions>
