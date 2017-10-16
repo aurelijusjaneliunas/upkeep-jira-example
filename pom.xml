@@ -22,9 +22,10 @@
         <jira.cloudformation.conf.file>${project.build.testOutputDirectory}/cloudformation.conf</jira.cloudformation.conf.file>
         <jira.cloudformation.region>us-east-1</jira.cloudformation.region>
         <jira.cloudformation.stack.name>JIRA-Data-Center</jira.cloudformation.stack.name>
-
-        <!-- JIRA Initialisation properties -->
-
+		<jira.cloudformation.s3.aws.credentails>${project.basedir}/src/test/resources/s3.aws.user/credentials</jira.cloudformation.s3.aws.credentails>
+		<jira.cloudformation.s3.aws.config>${project.basedir}/src/test/resources/s3.aws.user/config</jira.cloudformation.s3.aws.config>
+		<jira.cloudformation.s3.restore.bucket>gatling-tests</jira.cloudformation.s3.restore.bucket>
+		<jira.cloudformation.s3.restore.xml>sample-project.zip</jira.cloudformation.s3.restore.xml>
 
         <!-- Information required to start EC2 instances and control them via SSH -->
         <ssh.private.key>${user.home}/.ssh/gatling-keypair.pem</ssh.private.key>
