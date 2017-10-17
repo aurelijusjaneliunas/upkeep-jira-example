@@ -9,14 +9,14 @@ object Login {
     .post("/rest/auth/1/session")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"username":"admin","password":"admin"}"""))
-    /*.check(
+    .check(
       jsonPath("$..session.name").exists.saveAs("authSessionName"),
       jsonPath("$..session.value").exists.saveAs("authSessionValue")
-    )*/
-    .check( bodyString.saveAs( "RESPONSE_DATA" ) )
+    )
   ).exec( session => {
     println( "Some Restful Service:" )
-    println( session( "RESPONSE_DATA" ).as[String] )
+    println( session( "authSessionName" ).as[String] )
+    println( session( "authSessionValue" ).as[String] )
     session
   })
 }

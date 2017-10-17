@@ -8,7 +8,7 @@ import processes.Login
 class BasicSimulation extends Simulation {
   val conf = ConfigFactory.load("cloudformation.conf")
   val httpConf = http
-    .baseURL(/*System.getProperty("baseUrl")*/ conf.getString("JIRAURL"))
+    .baseURL(conf.getString("JIRAURL"))
     .acceptHeader("*/*")
     .userAgentHeader("Gatling")
 

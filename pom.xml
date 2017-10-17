@@ -24,8 +24,9 @@
         <jira.cloudformation.stack.name>JIRA-Data-Center</jira.cloudformation.stack.name>
 		<jira.cloudformation.s3.aws.credentails>${project.basedir}/src/test/resources/s3.aws.user/credentials</jira.cloudformation.s3.aws.credentails>
 		<jira.cloudformation.s3.aws.config>${project.basedir}/src/test/resources/s3.aws.user/config</jira.cloudformation.s3.aws.config>
-		<jira.cloudformation.s3.restore.bucket>gatling-tests</jira.cloudformation.s3.restore.bucket>
-		<jira.cloudformation.s3.restore.xml>sample-project.zip</jira.cloudformation.s3.restore.xml>
+		<jira.cloudformation.s3.restore.bucket>matusnovak-gatling-tests</jira.cloudformation.s3.restore.bucket>
+		<jira.cloudformation.s3.restore.psql>sample-project.psql</jira.cloudformation.s3.restore.psql>
+		<jira.cloudformation.s3.restore.indexes>sample-project-indexes.tar.gz</jira.cloudformation.s3.restore.indexes>
 
         <!-- Information required to start EC2 instances and control them via SSH -->
         <ssh.private.key>${user.home}/.ssh/gatling-keypair.pem</ssh.private.key>
@@ -44,7 +45,7 @@
 
 		<!-- S3 integration settings -->
 		<s3.upload.enabled>true</s3.upload.enabled>
-		<s3.bucket>gatling-tests</s3.bucket>
+		<s3.bucket>matusnovak-gatling-tests</s3.bucket>
 		<s3.subfolder>my-gatling-tests-results</s3.subfolder>
 
 		<skipDownloadGatling>false</skipDownloadGatling>
@@ -149,6 +150,8 @@
 								<KeyName>gatling-keypair</KeyName>
 								<CustomDnsName/>
 								<JiraProduct>Software</JiraProduct>
+								<ClusterNodeMin>1</ClusterNodeMin>
+								<ClusterNodeMax>2</ClusterNodeMax>
 							</parameters>
 							<!-- What parameters to export once the stack is built?
 							     All params will be exported to jira.cloudformation.conf.file
@@ -223,43 +226,5 @@
                 </executions>
             </plugin>
 		</plugins>
-
-		<!-- <testSourceDirectory>src/test/scala</testSourceDirectory>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>net.alchim31.maven</groupId>
-					<artifactId>scala-maven-plugin</artifactId>
-					<version>${scala-maven-plugin.version}</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<args>
-								<arg>-Ybackend:GenBCode</arg>
-								<arg>-Ydelambdafy:method</arg>
-								<arg>-target:jvm-1.8</arg>
-								<arg>-deprecation</arg>
-								<arg>-feature</arg>
-								<arg>-unchecked</arg>
-								<arg>-language:implicitConversions</arg>
-								<arg>-language:postfixOps</arg>
-							</args>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins> -->
-
-
 	</build>
 </project>

@@ -16,3 +16,5 @@ buildNumber.properties
 results.txt
 gatling/
 aws.properties
+src/test/resources/s3.aws.user/credentials
+
