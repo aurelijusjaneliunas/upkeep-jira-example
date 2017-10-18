@@ -27,6 +27,7 @@
 		<jira.cloudformation.s3.restore.bucket>matusnovak-gatling-tests</jira.cloudformation.s3.restore.bucket>
 		<jira.cloudformation.s3.restore.psql>sample-project.psql</jira.cloudformation.s3.restore.psql>
 		<jira.cloudformation.s3.restore.indexes>sample-project-indexes.tar.gz</jira.cloudformation.s3.restore.indexes>
+		<jira.cloudformation.rds.password>cloudformationexample</jira.cloudformation.rds.password>
 
         <!-- Information required to start EC2 instances and control them via SSH -->
         <ssh.private.key>${user.home}/.ssh/gatling-keypair.pem</ssh.private.key>
@@ -128,6 +129,7 @@
 				<version>1.0</version>
 				<executions>
 					<execution>
+                        <id>start-cloud-formation</id>
 						<phase>pre-integration-test</phase>
 						<goals>
 							<goal>start</goal>
@@ -162,6 +164,13 @@
 							</exports>
 						</configuration>
 					</execution>
+                    <execution>
+                        <id>stop-cloud-formation</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
 				</executions>
 			</plugin>
 
@@ -203,28 +212,6 @@
                     </execution>
                 </executions>
             </plugin> -->
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
-                <executions>
-                    <execution>
-                        <id>exec-post-integration-test</id>
-                        <phase>post-integration-test</phase>
-                        <configuration>
-                            <workingDirectory>.</workingDirectory>
-                            <executable>echo</executable>
-                            <arguments>
-                                <argument>"post-integration-test"</argument>
-                            </arguments>
-                        </configuration>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 		</plugins>
 	</build>
 </project>
