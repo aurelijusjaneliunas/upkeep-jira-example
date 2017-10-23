@@ -13,10 +13,5 @@ object Login {
       jsonPath("$..session.name").exists.saveAs("authSessionName"),
       jsonPath("$..session.value").exists.saveAs("authSessionValue")
     )
-  ).exec( session => {
-    println( "Some Restful Service:" )
-    println( session( "authSessionName" ).as[String] )
-    println( session( "authSessionValue" ).as[String] )
-    session
-  })
+  )
 }

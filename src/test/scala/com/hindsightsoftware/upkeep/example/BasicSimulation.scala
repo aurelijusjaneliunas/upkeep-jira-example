@@ -3,7 +3,9 @@ package com.hindsightsoftware.upkeep.example
 import com.typesafe.config.ConfigFactory
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import processes.Login
+
+import scala.concurrent.duration._
+import processes.{FetchIssues, Login}
 
 class BasicSimulation extends Simulation {
   val conf = ConfigFactory.load("cloudformation.conf")
@@ -15,8 +17,10 @@ class BasicSimulation extends Simulation {
   val scn = scenario("BasicSimulation")
     .exec(Login.login)
     .pause(1)
+    .exec(FetchIssues.fetchIssues)
+    .pause(1)
 
   setUp(
-    scn.inject(atOnceUsers(1))
+    scn.inject(rampUsers(10) over (10 seconds))
   ).protocols(httpConf)
 }
